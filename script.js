@@ -74,13 +74,17 @@ function crossover(a, b){
 	return outputGenes;
 }
 
+function replaceAtIndex(str, i, c){
+	return str.substring(0, i) + c + str.substring(i + 1);
+}
+
 function mutate(agent){
 	for(let i = 0; i < agent.genes.length; i++){
-		if(floor(random(0, 100)) == 7){
+		if(floor(random(0, 100)) == 10){ // 1% chance of mutation
 			if(random() > 0.5){
-				agent.genes[i] = 'L';
+				agent.genes = replaceAtIndex(agent.genes, i, 'L');
 			}else{
-				agent.genes[i] = 'R';
+				agent.genes = replaceAtIndex(agent.genes, i, 'R');
 			}
 		}
 	}
