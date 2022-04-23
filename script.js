@@ -126,7 +126,7 @@ function calcFitness(agent){
 	const a = target[0] - agent.x;
 	const b = target[1] - agent.y;
 	const h = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-	return 2000 - h;
+	return floor(1500 - h);
 }
 
 function calcPopFitness(){
