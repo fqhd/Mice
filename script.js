@@ -107,6 +107,7 @@ function createMatingPool(){
 			highest = agent.fitness;
 		}
 	});
+	console.log(highest);
 
 	agents.forEach(agent => {
 		const normalizedFitness = agent.fitness / highest;
@@ -188,6 +189,9 @@ function runSimulationFrame(){
 		const box = makeBox(startButton[0], startButton[1], mouseX, mouseY);
 		rect(box.x, box.y, box.width, box.height);
 	}
+	stroke(color(0, 255, 0));
+	strokeWeight(5);
+	circle(1190, 250, 20);
 	moveAgents();
 }
 
