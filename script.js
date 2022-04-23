@@ -11,6 +11,7 @@ let matingPool = [];
 let frameIndex = 0;
 const startButton = [0, 0];
 let secondClick = false;
+let averageFitness;
 
 function setup(){
 	createAgents();
@@ -80,7 +81,7 @@ function replaceAtIndex(str, i, c){
 
 function mutate(agent){
 	for(let i = 0; i < agent.genes.length; i++){
-		if(floor(random(0, 100)) == 10){ // 1% chance of mutation
+		if(floor(random(0, 500)) == 10){ // 1% chance of mutation
 			if(random() > 0.5){
 				agent.genes = replaceAtIndex(agent.genes, i, 'L');
 			}else{
@@ -102,12 +103,15 @@ function generate(){
 function createMatingPool(){
 	matingPool = [];
 	let highest = 0;
+	let fit = 0;
 	agents.forEach(agent => {
 		if(agent.fitness > highest){
 			highest = agent.fitness;
+			fit += agent.fitness;
 		}
 	});
-	console.log(highest);
+	fit /= agents.length;
+	averageFitness.innerText = fit;
 
 	agents.forEach(agent => {
 		const normalizedFitness = agent.fitness / highest;
@@ -122,7 +126,7 @@ function calcFitness(agent){
 	const a = target[0] - agent.x;
 	const b = target[1] - agent.y;
 	const h = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-	return 1/h;
+	return 2000 - h;
 }
 
 function calcPopFitness(){
@@ -275,4 +279,9 @@ function addDocElements(){
 	const description = document.createElement('p');
 	description.innerText = 'Use the mouse to create obstascles. Watch the agents learn the path to the green dot';
 	document.body.appendChild(description);
+	averageFitness = document.createElement('span');
+	const fitnessLabel = document.createElement('p');
+	fitnessLabel.innerText = 'Average Fitness: ';
+	fitnessLabel.appendChild(averageFitness);
+	document.body.appendChild(fitnessLabel);
 }
