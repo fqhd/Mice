@@ -4,21 +4,18 @@ const ANIMATION_LENGTH = 350;
 const FRAMES_PER_GENE = 10;
 const MOUSE_WIDTH = 0.5;
 const MOUSE_SIZE = 50;
-const MOUSE_SPEED = 0.05;
-const target = [800, 250];
+const MOUSE_SPEED = 0.1;
+const target = [1200, 250];
 const obstacles = [];
 let matingPool = [];
 let frameIndex = 0;
 const startButton = [0, 0];
-let isClicked = false;
-let mouseX = 0;
-let mouseY = 0;
+let secondClick = false;
 
 function setup(){
-	window.addEventListener('click', mouseClick);
-	window.addEventListener('mousemove', mouseMove);
 	createAgents();
-	createCanvas(800, 500);
+	createCanvas(1200, 500);
+	addDocElements();
 }
 
 function draw(){
@@ -26,7 +23,7 @@ function draw(){
 	background(color(200, 200, 200));
 	runSimulationFrame();
 	frameIndex++;
-	if(frameIndex > ANIMATION_LENGTH){
+	if(frameIndex > ANIMATION_LENGTH || allStuck()){
 		calcPopFitness();
 		createMatingPool();
 		generate();
@@ -34,9 +31,13 @@ function draw(){
 	}
 }
 
-function mouseMove(e){
-	mouseX = e.clientX;
-	mouseY = e.clientY;
+function allStuck(){
+	for(let i = 0; i < agents.length; i++){
+		if(!agents[i].stuck){
+			return false;
+		}
+	}
+	return true;
 }
 
 function makeBox(x1, y1, x2, y2){
@@ -49,15 +50,15 @@ function makeBox(x1, y1, x2, y2){
 	};
 }
 
-function mouseClick(e){
-	if(!isClicked) {
-		startButton[0] = e.clientX;
-		startButton[1] = e.clientY;
-		isClicked = true;
+function mouseClicked(){
+	if(!secondClick) {
+		startButton[0] = mouseX;
+		startButton[1] = mouseY;
+		secondClick = true;
 	}else{
-		const box = makeBox(startButton[0], startButton[1], e.clientX, e.clientY);
+		const box = makeBox(startButton[0], startButton[1], mouseX, mouseY);
 		obstacles.push(box);
-		isClicked = false;
+		secondClick = false;
 	}
 }
 
@@ -75,7 +76,7 @@ function crossover(a, b){
 
 function mutate(agent){
 	for(let i = 0; i < agent.genes.length; i++){
-		if(floor(random(0, 40)) == 7){
+		if(floor(random(0, 100)) == 7){
 			if(random() > 0.5){
 				agent.genes[i] = 'L';
 			}else{
@@ -153,7 +154,7 @@ function createRandomGenes(){
 function createAgents(){
 	for(let i = 0; i < POP_COUNT; i++){
 		const agent = {
-			x: 10,
+			x: 0,
 			y: 250,
 			rotation: 0.01,
 			genes: createRandomGenes(),
@@ -174,7 +175,7 @@ function runSimulationFrame(){
 	obstacles.forEach(box => {
 		drawBox(box);
 	});
-	if(isClicked){
+	if(secondClick){
 		stroke(color(255, 0, 0));
 		strokeWeight(5);
 		point(startButton[0], startButton[1]);
@@ -191,6 +192,9 @@ function drawBox(box){
 }
 
 function isPointInBox(x, y){
+	if(x < 0 || x > 1200 || y < 0 || y > 500){
+		return true;
+	}
 	for(let i = 0; i < obstacles.length; i++){
 		const box = obstacles[i];
 		if(!(x < box.x || x > box.x + box.width || y < box.y || y > box.y + box.height)){
@@ -257,4 +261,10 @@ function calcPoints(rotation){
 		p1,
 		p2
 	};
+}
+
+function addDocElements(){
+	const description = document.createElement('p');
+	description.innerText = 'Use the mouse to create obstascles. Watch the agents learn the path to the green dot';
+	document.body.appendChild(description);
 }
