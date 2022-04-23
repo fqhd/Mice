@@ -11,12 +11,14 @@ let matingPool = [];
 let frameIndex = 0;
 const startButton = [0, 0];
 let isClicked = false;
+let mouseX = 0;
+let mouseY = 0;
 
 function setup(){
 	window.addEventListener('click', mouseClick);
+	window.addEventListener('mousemove', mouseMove);
 	createAgents();
 	createCanvas(800, 500);
-	strokeWeight(2);
 }
 
 function draw(){
@@ -30,6 +32,11 @@ function draw(){
 		generate();
 		resetSimulation();
 	}
+}
+
+function mouseMove(e){
+	mouseX = e.clientX;
+	mouseY = e.clientY;
 }
 
 function makeBox(x1, y1, x2, y2){
@@ -159,12 +166,23 @@ function createAgents(){
 }
 
 function runSimulationFrame(){
+	stroke(color(0));
+	strokeWeight(2);
 	agents.forEach(agent => {
 		drawAgent(agent);
 	});
 	obstacles.forEach(box => {
 		drawBox(box);
 	});
+	if(isClicked){
+		stroke(color(255, 0, 0));
+		strokeWeight(5);
+		point(startButton[0], startButton[1]);
+
+		stroke(color(0, 255, 0, 50));
+		const box = makeBox(startButton[0], startButton[1], mouseX, mouseY);
+		rect(box.x, box.y, box.width, box.height);
+	}
 	moveAgents();
 }
 
