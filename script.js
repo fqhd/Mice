@@ -7,11 +7,12 @@ const MOUSE_SIZE = 50;
 const MOUSE_SPEED = 0.1;
 const target = [1200, 250];
 const obstacles = [];
-let matingPool = [];
 let frameIndex = 0;
 const startButton = [0, 0];
 let secondClick = false;
 let averageFitness;
+let highestProb = 0;
+let geneSearch = []; // 200 sorted elements with their probabilities
 
 function setup(){
 	createAgents();
@@ -26,7 +27,7 @@ function draw(){
 	frameIndex++;
 	if(frameIndex > ANIMATION_LENGTH || allStuck()){
 		calcPopFitness();
-		createMatingPool();
+		createGenePool();
 		generate();
 		resetSimulation();
 	}
@@ -66,7 +67,7 @@ function mouseClicked(){
 function crossover(a, b){
 	let outputGenes = '';
 	for(let i = 0; i < a.length; i++){
-		if(i > a.length/2){
+		if(random() > 0.5){
 			outputGenes += a[i];
 		}else{
 			outputGenes += b[i];
@@ -81,7 +82,7 @@ function replaceAtIndex(str, i, c){
 
 function mutate(agent){
 	for(let i = 0; i < agent.genes.length; i++){
-		if(floor(random(0, 500)) == 10){ // 1% chance of mutation
+		if(floor(random(1000)) == 01){ // 0.01% chance of mutation
 			if(random() > 0.5){
 				agent.genes = replaceAtIndex(agent.genes, i, 'L');
 			}else{
@@ -91,42 +92,58 @@ function mutate(agent){
 	}
 }
 
+function selectAgent(){
+	const r = random(highestProb);
+	for(let i = 0; i < geneSearch.length; i++){
+		if(r < geneSearch[i].prob){
+			return geneSearch[i].gene;
+		}
+	}
+	return geneSearch[geneSearch.length - 1].gene;
+}
+
 function generate(){
 	agents.forEach(agent => {
-		const a = matingPool[floor(random(matingPool.length))];
-		const b = matingPool[floor(random(matingPool.length))];
+		const a = selectAgent();
+		const b = selectAgent();
 		agent.genes = crossover(a, b);
 		mutate(agent);
 	});
 }
 
-function createMatingPool(){
-	matingPool = [];
-	let highest = 0;
-	let fit = 0;
-	agents.forEach(agent => {
-		if(agent.fitness > highest){
-			highest = agent.fitness;
-			fit += agent.fitness;
-		}
-	});
-	fit /= agents.length;
-	averageFitness.innerText = fit;
+function comp(a, b){
+	if(a.prob > b.prob){
+		return 1;
+	}else{
+		return -1;
+	}
+}
 
+function createGenePool(){
+	let totalFitness = 0;
 	agents.forEach(agent => {
-		const normalizedFitness = agent.fitness / highest;
-		const nAddElements = floor(normalizedFitness * 100);
-		for(let i = 0; i < nAddElements; i++){
-			matingPool.push(agent.genes);
+		totalFitness += agent.fitness;
+	});
+	highestProb = 0;
+	agents.forEach(agent => {
+		const normalizedFitness = (agent.fitness / totalFitness) * 100;
+		geneSearch.push({
+			gene: agent.genes,
+			prob: normalizedFitness
+		});
+		if(normalizedFitness > highestProb){
+			highestProb = normalizedFitness;
 		}
 	});
+	geneSearch.sort(comp);
+	averageFitness.innerText = totalFitness / agents.length;
 }
 
 function calcFitness(agent){
 	const a = target[0] - agent.x;
 	const b = target[1] - agent.y;
 	const h = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-	return floor(1500 - h);
+	return Math.pow(floor(1500 - h), 6);
 }
 
 function calcPopFitness(){
